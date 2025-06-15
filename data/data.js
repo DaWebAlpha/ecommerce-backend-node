@@ -134,15 +134,6 @@ export const data = [
     "category": "Category D",
     "tags": ["eco", "popular", "limited"]
   },
-  {
-    "id": 16,
-    "title": "Product 16",
-    "description": "Description for product 8.",
-    "image": "./public/images/pic8.jpg",
-    "price": 22.99,
-    "category": "Category D",
-    "tags": ["new", "featured", "exclusive"]
-  }
 ];
 
 
