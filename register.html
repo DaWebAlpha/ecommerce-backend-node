@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register Form</title>
+  <style>
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <h1>Register</h1>
+  <form id="registerForm">
+    <label>Username:</label><br>
+    <input type="text" id="username" required><br>
+    <span class="validateNameMessage"></span><br><br>
+
+    <label>Email:</label><br>
+    <input type="email" id="email" required><br>
+    <span class="validateEmailMessage"></span><br><br>
+
+    <label>Password:</label><br>
+    <input type="password" id="password" required><br>
+    <span class="validatePassword"></span><br><br>
+
+    <label>Confirm Password:</label><br>
+    <input type="password" id="confirmPassword" required><br>
+    <span class="validateConfirmPassword"></span><br><br>
+
+    <button type="submit">Register</button>
+  </form>
+
+  <script>
+    const form = document.getElementById("registerForm");
+    const username = document.getElementById("username");
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirmPassword");
+
+    const validateNameMessage = document.querySelector(".validateNameMessage");
+    const validateEmailMessage = document.querySelector(".validateEmailMessage");
+    const validatePasswordMessage = document.querySelector(".validatePassword");
+    const validateConfirmPasswordMessage = document.querySelector(".validateConfirmPassword");
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    const validatePassword = () => {
+      const val = password.value.trim();
+      if (!passwordRegex.test(val)) {
+        validatePasswordMessage.textContent = "❌ Weak password";
+        validatePasswordMessage.className = "validatePassword error";
+      } else {
+        validatePasswordMessage.textContent = "✅ Strong password";
+        validatePasswordMessage.className = "validatePassword success";
+      }
+    };
+
+    const validateConfirmPassword = () => {
+      const match = password.value.trim() === confirmPassword.value.trim();
+      validateConfirmPasswordMessage.textContent = match ? "✅ Passwords match" : "❌ Passwords do not match";
+      validateConfirmPasswordMessage.className = match ? "validateConfirmPassword success" : "validateConfirmPassword error";
+    };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      validatePassword();
+      validateConfirmPassword();
+
+      if (
+        validatePasswordMessage.classList.contains("error") ||
+        validateConfirmPasswordMessage.classList.contains("error")
+      ) {
+        alert("Fix the errors before submitting.");
+        return;
+      }
+
+      const data = {
+        username: username.value.trim(),
+        email: email.value.trim(),
+        password: password.value.trim(),
+      };
+
+      try {
+        const response = await fetch("http://localhost:3000/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          alert("✅ Registration successful");
+        } else {
+          alert(`❌ ${result.error}`);
+        }
+      } catch (err) {
+        alert("❌ Error submitting form");
+        console.error(err);
+      }
+    });
+
+    password.addEventListener("input", () => {
+      validatePassword();
+      validateConfirmPassword();
+    });
+    confirmPassword.addEventListener("input", validateConfirmPassword);
+  </script>
+</body>
+</html>

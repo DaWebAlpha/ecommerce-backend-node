@@ -1,19 +1,14 @@
-// models/userModels.js
-import mongoose from '../database/db.js';
+import mongoose from '../config/db.js';
 import cuid from 'cuid';
 import validator from 'validator';
-import bcrypt from 'bcrypt'; // ✅ Required for password comparison
-
+import bcrypt from 'bcrypt';
 
 const { isEmail, isAlphanumeric } = validator;
 
-// --- Schema Helpers ---
-
- const isUnique = async function (doc, username) {
+const isUnique = async function (doc, username) {
   const existing = await User.findOne({ username });
   return !existing || doc._id === existing._id;
 };
-
 
 function usernameSchema() {
   return {
@@ -26,11 +21,11 @@ function usernameSchema() {
     validate: [
       {
         validator: isAlphanumeric,
-        message: props => `${props.value} contains special characters`
+        message: props => `${props.value} contains invalid characters`
       },
       {
         validator: str => !/^admin$/i.test(str),
-        message: () => 'Invalid username'
+        message: () => 'Username "admin" is reserved'
       },
       {
         validator: async function (username) {
@@ -43,10 +38,9 @@ function usernameSchema() {
 }
 
 function emailSchema(opts = {}) {
-  const { required } = opts;
   return {
     type: String,
-    required: !!required,
+    required: !!opts.required,
     validate: {
       validator: isEmail,
       message: props => `${props.value} is not a valid email address`
@@ -54,16 +48,20 @@ function emailSchema(opts = {}) {
   };
 }
 
-// --- User Schema ---
+
+
 
 const UserSchema = new mongoose.Schema({
   _id: { type: String, default: cuid },
   username: usernameSchema(),
-  password: { type: String, maxLength: 120, required: true },
-  email: emailSchema({ required: true })
+  password: { type: String, required: true, maxLength: 120 },
+  email: emailSchema({ required: true }),
+
+  // ✅ Add these two fields for password reset
+  resetToken: { type: String },
+  tokenExpiry: { type: Date }
 });
 
-// ✅ Add method to compare plaintext password to hashed one
 UserSchema.methods.comparePassword = async function (plainTextPassword) {
   return await bcrypt.compare(plainTextPassword, this.password);
 };

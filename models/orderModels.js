@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose from '../config/db.js'
 import cuid from 'cuid'
 import validator from 'validator'
 
@@ -16,7 +16,7 @@ const orderSchema = new mongoose.Schema({
         required: true,
         validate:{
             validator: validator.isEmail,
-            message: props => `${props.value} is anot a valid Email address`
+            message: props => `${props.value} is not a valid Email address`
         }
     },
     createdAt:{type: Date, default: Date.now}
