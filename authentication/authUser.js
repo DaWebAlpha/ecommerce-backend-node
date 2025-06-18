@@ -25,19 +25,28 @@ export const remove = autoCatchFn(async function (username) {
   await User.deleteOne({ username });
 });
 
-// ✅ FIXED: Removed autoCatchFn from here
+
 export const create = async function (fields) {
-  if (!fields || !fields.username || !fields.password || !fields.email) {
+  const { username, email, password, examType } = fields;
+
+  if (!username || !password || !email || !examType) {
     throw new Error('Missing required fields');
   }
 
-  const user = new User(fields);
+  const user = new User({
+    username,
+    email,
+    password,
+    examType // ✅ Make sure this is passed explicitly
+  });
+
   await hashPassword(user);
   await user.save();
   return user;
 };
 
-// ✅ FIXED: Removed autoCatchFn from here
+
+
 export const edit = async function (username, change) {
   const user = await User.findOne({ username });
   if (!user) throw new Error('User not found');

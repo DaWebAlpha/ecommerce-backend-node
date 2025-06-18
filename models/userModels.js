@@ -49,18 +49,30 @@ function emailSchema(opts = {}) {
 }
 
 
-
-
 const UserSchema = new mongoose.Schema({
   _id: { type: String, default: cuid },
   username: usernameSchema(),
   password: { type: String, required: true, maxLength: 120 },
   email: emailSchema({ required: true }),
 
+  // ✅ New field: Exam Type for Teachers
+  examType: {
+    type: String,
+    enum: [
+      'Principal Superintendent',
+      'Assistant Director II',
+      'Assistant Director I',
+      'Deputy Director'
+    ],
+    required: true
+  },
+
   // ✅ Add these two fields for password reset
   resetToken: { type: String },
   tokenExpiry: { type: Date }
 });
+
+
 
 UserSchema.methods.comparePassword = async function (plainTextPassword) {
   return await bcrypt.compare(plainTextPassword, this.password);

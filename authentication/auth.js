@@ -39,11 +39,12 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', authLimiter, autoCatchFn(async (req, res) => {
-  const { username, password, email } = req.body || {};
+  const { username, password, email, examType } = req.body || {};
 
-  if (!username || !password || !email) {
+  console.log(req.body);
+  if (!username || !password || !email || !examType) {
     return res.status(400).render('register', {
-      error: 'All fields are required.',
+      error: 'All fields are required, including Exam Type.',
     });
   }
 
@@ -57,7 +58,7 @@ app.post('/register', authLimiter, autoCatchFn(async (req, res) => {
   }
 
   try {
-    await createUser({ username, password, email });
+    await createUser({ username, password, email, examType });
     console.log('✅ User registered');
     return res.redirect('/login');
   } catch (err) {
@@ -74,6 +75,7 @@ app.post('/register', authLimiter, autoCatchFn(async (req, res) => {
   }
 }));
 
+
   // ✅ Admin-only route to list users
   app.get('/listUsers', ensureAdmin(), autoCatchFn(async (req, res) => {
     const users = await listUsers();
@@ -85,22 +87,34 @@ app.post('/register', authLimiter, autoCatchFn(async (req, res) => {
 
 
 
-  // ✅ DELETE specific user
-  app.delete('/admin/users/:username', ensureAdmin(), autoCatchFn(async (req, res) => {
-    const { username } = req.params;
+// ✅ DELETE specific user
+app.delete('/admin/users/:username', ensureAdmin(), autoCatchFn(async (req, res) => {
+  const { username } = req.params;
 
-    if (username === 'admin') {
-      return res.status(403).json({ error: 'Cannot delete admin user' });
-    }
+  if (username === 'admin') {
+    return res.status(403).render('admin/registeredUser', {
+      users: await User.find({}, 'username email'),
+      error: 'Cannot delete admin user'
+    });
+  }
 
-    const deleted = await User.findOneAndDelete({ username });
-    if (!deleted) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+  const deleted = await User.findOneAndDelete({ username });
 
-    //res.json({ success: true, message: `User '${username}' deleted.` });
-    res.render('admin/registeredUser', {username, error: null})
-  }));
+  if (!deleted) {
+    return res.status(404).render('admin/registeredUser', {
+      users: await User.find({}, 'username email'),
+      error: 'User not found'
+    });
+  }
+
+  const users = await User.find({}, 'username email');
+
+  res.render('admin/registeredUser', {
+    users,
+    error: null
+  });
+}));
+
 
   // ✅ DELETE all non-admin users
   app.delete('/admin/users', ensureAdmin(), autoCatchFn(async (req, res) => {
@@ -114,9 +128,9 @@ app.post('/register', authLimiter, autoCatchFn(async (req, res) => {
 });
 
 
+
 app.post('/login', authLimiter, autoCatchFn(async (req, res) => {
   const { username, password } = req.body;
-  //console.log('🔐 Login attempt:', { username });
 
   if (!username || !password) {
     return res.status(400).render('login', { error: 'All fields are required.' });
@@ -151,7 +165,13 @@ app.post('/login', authLimiter, autoCatchFn(async (req, res) => {
     return res.status(401).render('login', { error: 'Incorrect password.' });
   }
 
-  userData = { username: user.username, email: user.email, role: 'user' };
+  userData = {
+    username: user.username,
+    email: user.email,
+    role: 'user',
+    examType: user.examType
+  };
+
   const token = jwt.sign(userData, jwtSecret, { expiresIn: '2h' });
 
   res.cookie('token', token, {
@@ -160,9 +180,24 @@ app.post('/login', authLimiter, autoCatchFn(async (req, res) => {
     sameSite: 'Strict',
   });
 
-  console.log('✅ User login successful');
-  return res.redirect('/secret');
+  console.log(`✅ ${user.username} login successful`);
+
+  // ✅ Redirect based on examType
+  switch (user.examType) {
+    case 'Principal Superintendent':
+      return res.redirect('/users/ps');
+    case 'Assistant Director II':
+      return res.redirect('/users/adII');
+    case 'Assistant Director I':
+      return res.redirect('/users/adI');
+    case 'Deputy Director':
+      return res.redirect('/users/dd');
+    default:
+      return res.redirect('/login');
+  }
 }));
+
+
 
 
  // ✅ Logout Route

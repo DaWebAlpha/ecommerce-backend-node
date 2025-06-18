@@ -47,15 +47,38 @@
   <section class="teachers">
     <div class="container  py-5 my-5">
       <header class="header">
-        <h2 class="text-center">ADMIN INFORMATION</h2>
-      </header>
-      <form action="/listUsers" method="GET">
-        <button class="btn">Submit</button>
-      </form>
+                <h2 class="text-center">ADMIN INFORMATION</h2>
+        </header>
+      <div class="row justify-content-center g-4">
+        
+        <div class="col-md-6 col-lg-3">
+          <div class="card">
+            <div class="card-body shadow-sm">
+              <h5 class="card-title">Registered Users</h5>
+              <p card-text>List of Users who have registered</p>
+              <form action="/listUsers" method="GET">
+                <button class="btn btn-primary">Submit</button>
+              </form>
+            </div>
+          </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="card">
+            <div class="card-body shadow-sm">
+              <h5 class="card-title">Registered Users</h5>
+              <p card-text>List of Users who have registered</p>
+              <form action="/listUsers" method="GET">
+                <button class="btn btn-primary">Submit</button>
+              </form>
+            </div>
+          </div>
+          </div>
+      </div>
     </div>
   </section>
   <section>
     <!-- Main Content -->
+  
   <form action="/logout" method="POST">
     <button class="btn">Logout</button>
   </form>

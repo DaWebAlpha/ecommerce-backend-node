@@ -11,7 +11,9 @@ import { notFound } from './middleware/notFound.js';
 import orderRouter from './routes/orderRoutes.js';
 import productRouter from './routes/productroutes.js';
 import resetRoutes from './routes/resetRoutes.js';
-import pageRoutes from './routes/pageRoutes.js'; // ✅
+import pageRoutes from './routes/pageRoutes.js'; 
+import methodOverride from 'method-override';
+
 
 dotenv.config();
 
@@ -27,6 +29,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(cors);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 app.use(cookieParser());
 app.use(express.static('public'));
 
